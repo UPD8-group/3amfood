@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>3AMFood — What's Still Open Near You</title>
+<meta name="description" content="Find food that's actually open right now. Sorted by closing time, for shift workers and night owls.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --black: #080808;
+  --deep: #0e0e0e;
+  --surface: #141414;
+  --card: #181818;
+  --border: #222;
+  --border-light: #2e2e2e;
+  --neon: #ff3b3b;
+  --neon-dim: rgba(255,59,59,0.15);
+  --amber: #ffb830;
+  --amber-dim: rgba(255,184,48,0.12);
+  --green: #39ff8a;
+  --green-dim: rgba(57,255,138,0.1);
+  --white: #f0ece4;
+  --muted: #5a5a5a;
+  --dimmed: #333;
+  --sidebar-w: 400px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'DM Mono', monospace;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ─── GRAIN ─── */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+  opacity:.5;
+}
+
+/* ─── NAV ─── */
+#main-nav {
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:500;
+  padding:18px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  transition: background 0.4s, border-bottom 0.4s;
+}
+
+#main-nav.scrolled {
+  background: rgba(8,8,8,0.97);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:26px;
+  letter-spacing:2px;
+  color:var(--white);
+  text-decoration:none;
+}
+.logo em {
+  color:var(--neon);
+  font-style:normal;
+  text-shadow:0 0 20px rgba(255,59,59,.6);
+}
+
+.nav-right {
+  display:flex;
+  align-items:center;
+  gap:24px;
+}
+
+.nav-clock {
+  font-size:12px;
+  letter-spacing:1px;
+  color:var(--muted);
+}
+.nav-clock .t { color:var(--amber); }
+
+.nav-links {
+  display:flex;
+  gap:0;
+  list-style:none;
+}
+
+.nav-links a {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  text-decoration:none;
+  padding:6px 16px;
+  border:1px solid transparent;
+  transition:all .2s;
+}
+.nav-links a:hover, .nav-links a.active {
+  color:var(--white);
+  border-color:var(--border);
+}
+
+/* ─── HERO ─── */
+#hero {
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  padding:120px 24px 80px;
+}
+
+.hero-bg {
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(255,59,59,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 20%, rgba(255,184,48,.03) 0%, transparent 60%);
+}
+
+/* City skyline silhouette */
+.skyline {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:180px;
+  opacity:.06;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 180'%3E%3Cpath fill='%23f0ece4' d='M0,180 L0,100 L40,100 L40,60 L60,60 L60,40 L80,40 L80,60 L100,60 L100,80 L130,80 L130,40 L140,40 L140,20 L150,20 L150,40 L160,40 L160,80 L190,80 L190,50 L210,50 L210,30 L220,30 L220,10 L230,10 L230,30 L240,30 L240,50 L260,50 L260,80 L300,80 L300,60 L320,60 L320,30 L330,30 L330,15 L340,15 L340,5 L350,5 L350,15 L360,15 L360,30 L370,30 L370,60 L410,60 L410,90 L440,90 L440,55 L460,55 L460,35 L470,35 L470,20 L480,20 L480,35 L490,35 L490,55 L520,55 L520,80 L560,80 L560,50 L580,50 L580,25 L590,25 L590,10 L600,10 L600,25 L610,25 L610,50 L640,50 L640,70 L680,70 L680,45 L700,45 L700,25 L710,25 L710,10 L720,10 L720,25 L730,25 L730,45 L760,45 L760,75 L800,75 L800,50 L820,50 L820,30 L835,30 L835,15 L845,15 L845,5 L855,5 L855,15 L865,15 L865,30 L880,30 L880,50 L920,50 L920,80 L960,80 L960,55 L980,55 L980,35 L990,35 L990,20 L1000,20 L1000,35 L1010,35 L1010,55 L1040,55 L1040,80 L1080,80 L1080,60 L1100,60 L1100,40 L1110,40 L1110,25 L1120,25 L1120,40 L1130,40 L1130,60 L1160,60 L1160,85 L1200,85 L1200,55 L1220,55 L1220,35 L1230,35 L1230,15 L1240,15 L1240,35 L1250,35 L1250,55 L1280,55 L1280,80 L1320,80 L1320,60 L1340,60 L1340,40 L1360,40 L1360,60 L1380,60 L1380,80 L1400,80 L1400,180 Z'/%3E%3C/svg%3E") no-repeat bottom center;
+  background-size:cover;
+}
+
+.hero-eyebrow {
+  font-size:11px;
+  letter-spacing:5px;
+  color:var(--neon);
+  text-transform:uppercase;
+  margin-bottom:24px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  opacity:0;
+  animation:fadeUp .7s ease forwards .2s;
+}
+
+.pulse-dot {
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--neon);
+  box-shadow:0 0 10px var(--neon);
+  animation:pulseDot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.6);opacity:.5}
+}
+
+.hero-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(72px,16vw,200px);
+  line-height:.88;
+  letter-spacing:-1px;
+  margin-bottom:10px;
+  opacity:0;
+  animation:fadeUp .7s ease forwards .4s;
+}
+.hero-title .l1 { display:block; color:var(--white); }
+.hero-title .l2 {
+  display:block;
+  color:var(--neon);
+  text-shadow:0 0 80px rgba(255,59,59,.4), 0 0 160px rgba(255,59,59,.15);
+}
+
+.hero-sub {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(15px,2.2vw,20px);
+  font-weight:300;
+  color:var(--muted);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:52px;
+  opacity:0;
+  animation:fadeUp .7s ease forwards .6s;
+}
+.hero-sub strong { color:var(--white); font-weight:600; }
+
+.hero-ctas {
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  justify-content:center;
+  opacity:0;
+  animation:fadeUp .7s ease forwards .8s;
+}
+
+.btn-primary {
+  background:var(--neon);
+  color:var(--black);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  padding:16px 36px;
+  border:none;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  transition:all .2s;
+  box-shadow:0 0 40px rgba(255,59,59,.25);
+}
+.btn-primary:hover {
+  background:var(--white);
+  box-shadow:0 0 60px rgba(255,59,59,.4);
+  transform:translateY(-2px);
+}
+
+.btn-ghost {
+  background:transparent;
+  color:var(--white);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  padding:15px 32px;
+  border:1px solid var(--border-light);
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .2s;
+}
+.btn-ghost:hover { border-color:var(--muted); }
+
+.scroll-hint {
+  position:absolute;
+  bottom:32px; left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  opacity:0;
+  animation:fadeUp .7s ease forwards 1.3s;
+}
+.scroll-hint span { font-size:9px; letter-spacing:4px; color:var(--dimmed); text-transform:uppercase; }
+.scroll-line {
+  width:1px; height:44px;
+  background:linear-gradient(to bottom, var(--dimmed), transparent);
+  animation:scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%,100%{opacity:.3;transform:scaleY(1)}
+  50%{opacity:1;transform:scaleY(1.1)}
+}
+
+/* ─── TICKER ─── */
+.ticker-wrap {
+  background:var(--neon);
+  padding:10px 0;
+  overflow:hidden;
+}
+.ticker {
+  display:flex;
+  animation:ticker 28s linear infinite;
+  white-space:nowrap;
+}
+.ticker-item {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--black);
+  padding:0 28px;
+  flex-shrink:0;
+}
+.ticker-sep { color:rgba(0,0,0,.3); margin-right:28px; }
+@keyframes ticker {
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+
+/* ─── APP SECTION ─── */
+#app {
+  display:flex;
+  height:calc(100vh - 0px);
+  min-height:700px;
+  position:relative;
+}
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:var(--deep);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  overflow:hidden;
+  z-index:10;
+}
+
+.sidebar-header {
+  padding:20px 20px 0;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+
+.sidebar-title-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+
+.sidebar-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:1px;
+}
+
+.result-count {
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+.result-count span { color:var(--neon); font-size:14px; }
+
+.filter-bar {
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding-bottom:14px;
+  scrollbar-width:none;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+
+.filter-btn {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:6px 14px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all .15s;
+  flex-shrink:0;
+}
+.filter-btn.active, .filter-btn:hover {
+  background:var(--neon);
+  color:var(--black);
+  border-color:var(--neon);
+}
+
+/* Search box */
+.search-wrap {
+  padding:14px 20px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+
+.search-box {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  padding:10px 14px;
+  transition:border-color .2s;
+}
+.search-box:focus-within { border-color:var(--neon); }
+
+.search-box svg { color:var(--muted); flex-shrink:0; }
+
+.search-box input {
+  background:none;
+  border:none;
+  outline:none;
+  color:var(--white);
+  font-family:'DM Mono',monospace;
+  font-size:12px;
+  width:100%;
+}
+.search-box input::placeholder { color:var(--dimmed); }
+
+/* Venue list */
+#venue-list {
+  flex:1;
+  overflow-y:auto;
+  padding:12px 0;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent;
+}
+#venue-list::-webkit-scrollbar { width:3px; }
+#venue-list::-webkit-scrollbar-track { background:transparent; }
+#venue-list::-webkit-scrollbar-thumb { background:var(--border); }
+
+/* Loading state */
+.loading-state {
+  padding:48px 24px;
+  text-align:center;
+}
+.loading-spinner {
+  width:32px; height:32px;
+  border:2px solid var(--border);
+  border-top-color:var(--neon);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  margin:0 auto 16px;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-state p { font-size:12px; color:var(--muted); letter-spacing:1px; }
+
+/* Location prompt */
+.loc-prompt {
+  padding:24px 20px;
+}
+.loc-prompt-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  padding:24px;
+  text-align:center;
+}
+.loc-prompt-card h3 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:24px;
+  margin-bottom:8px;
+}
+.loc-prompt-card p {
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:1px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+/* Venue card */
+.venue-card {
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  position:relative;
+  transition:background .15s;
+  overflow:hidden;
+}
+.venue-card::before {
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:3px;
+  background:transparent;
+  transition:background .15s;
+}
+.venue-card:hover, .venue-card.active {
+  background:var(--surface);
+}
+.venue-card.active::before { background:var(--neon); }
+.venue-card:hover::before { background:var(--border-light); }
+.venue-card.active .venue-name { color:var(--neon); }
+
+.venue-card-top {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+
+.venue-name {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:.5px;
+  line-height:1.1;
+  transition:color .15s;
+}
+
+.urgency-tag {
+  font-size:9px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border:1px solid;
+  white-space:nowrap;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-weight:500;
+}
+.tag-urgent { color:var(--neon); border-color:rgba(255,59,59,.3); background:rgba(255,59,59,.08); }
+.tag-soon   { color:var(--amber); border-color:rgba(255,184,48,.3); background:rgba(255,184,48,.08); }
+.tag-open   { color:var(--green); border-color:rgba(57,255,138,.25); background:rgba(57,255,138,.06); }
+.tag-allday { color:#888; border-color:#333; background:rgba(255,255,255,.03); }
+
+.tag-dot {
+  width:5px; height:5px;
+  border-radius:50%;
+  background:currentColor;
+  animation:blink 1.8s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.venue-type {
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+
+.venue-meta-row {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:12px;
+}
+
+.meta-item {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:11px;
+  color:var(--muted);
+}
+.meta-item svg { flex-shrink:0; }
+.meta-item strong {
+  color:var(--white);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.5px;
+}
+.meta-item strong.urgent { color:var(--neon); }
+.meta-item strong.soon   { color:var(--amber); }
+
+.venue-actions {
+  display:flex;
+  gap:6px;
+}
+
+.btn-sm {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:7px 12px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .15s;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+}
+.btn-sm:hover { border-color:var(--white); color:var(--white); }
+.btn-sm.uber:hover { background:var(--white); color:var(--black); border-color:var(--white); }
+
+.rating-stars {
+  display:flex;
+  align-items:center;
+  gap:3px;
+  font-size:10px;
+  color:var(--amber);
+}
+
+/* No results */
+.no-results {
+  padding:48px 20px;
+  text-align:center;
+}
+.no-results-icon { font-size:48px; margin-bottom:16px; display:block; }
+.no-results h3 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;
+  margin-bottom:8px;
+}
+.no-results p { font-size:12px; color:var(--muted); line-height:1.6; }
+
+/* ─── MAP ─── */
+#map-container {
+  flex:1;
+  position:relative;
+  background:var(--black);
+}
+
+#map {
+  width:100%;
+  height:100%;
+}
+
+/* Map overlay controls */
+.map-controls {
+  position:absolute;
+  top:16px; right:16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  z-index:10;
+}
+
+.map-btn {
+  background:var(--deep);
+  border:1px solid var(--border);
+  color:var(--white);
+  width:40px; height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:all .15s;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;
+  font-weight:700;
+}
+.map-btn:hover { border-color:var(--neon); color:var(--neon); }
+
+/* My location marker pulse */
+.map-you-label {
+  background:rgba(8,8,8,.9);
+  border:1px solid var(--neon);
+  color:var(--neon);
+  font-family:'DM Mono',monospace;
+  font-size:9px;
+  letter-spacing:2px;
+  padding:4px 8px;
+  text-transform:uppercase;
+}
+
+/* ─── INFO WINDOW (custom) ─── */
+.info-win {
+  background:var(--deep) !important;
+  border:1px solid var(--border) !important;
+  padding:0 !important;
+  min-width:240px;
+}
+.iw-body {
+  padding:16px;
+}
+.iw-name {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;
+  font-weight:700;
+  margin-bottom:2px;
+  color:var(--white);
+}
+.iw-type {
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.iw-row {
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+.iw-row strong { color:var(--white); font-family:'Barlow Condensed',sans-serif; font-size:15px; }
+.iw-btns {
+  display:flex;
+  gap:6px;
+}
+.iw-btn {
+  flex:1;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:8px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  cursor:pointer;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  text-align:center;
+  transition:all .15s;
+}
+.iw-btn:hover { border-color:var(--white); color:var(--white); }
+
+/* ─── HOW SECTION ─── */
+#how {
+  background:var(--deep);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:100px 0;
+}
+
+.container {
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 32px;
+}
+
+.section-kicker {
+  font-size:10px;
+  letter-spacing:5px;
+  color:var(--neon);
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:18px;
+}
+.section-kicker::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--border);
+}
+
+.section-h {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(44px,6vw,80px);
+  line-height:1;
+  letter-spacing:1px;
+  margin-bottom:60px;
+}
+
+.steps-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  border:1px solid var(--border);
+}
+
+.step {
+  padding:40px 36px;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.step:last-child { border-right:none; }
+
+.step-n {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:80px;
+  line-height:1;
+  color:var(--border);
+  display:block;
+  margin-bottom:16px;
+}
+
+.step-icon { font-size:28px; margin-bottom:12px; display:block; }
+.step-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.step-desc { font-size:12px; color:var(--muted); line-height:1.8; }
+
+/* Stats */
+.stats-strip {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--border);
+  border-top:none;
+}
+.stat {
+  padding:32px 28px;
+  border-right:1px solid var(--border);
+  text-align:center;
+}
+.stat:last-child { border-right:none; }
+.stat-n {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:52px;
+  color:var(--neon);
+  text-shadow:0 0 30px rgba(255,59,59,.3);
+  display:block;
+  line-height:1;
+  margin-bottom:6px;
+}
+.stat-l { font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; }
+
+/* ─── ABOUT STRIP ─── */
+#about {
+  padding:80px 0;
+  border-top:1px solid var(--border);
+}
+
+.about-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:60px;
+  align-items:center;
+}
+
+.about-text h2 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(44px,5vw,72px);
+  line-height:1;
+  margin-bottom:24px;
+}
+.about-text h2 em { color:var(--neon); font-style:normal; }
+.about-text p {
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.9;
+  margin-bottom:16px;
+}
+.about-text p strong { color:var(--white); }
+
+.about-pills {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:28px;
+}
+.pill {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:7px 16px;
+  border:1px solid var(--border-light);
+  color:var(--muted);
+}
+
+.about-callout {
+  background:var(--surface);
+  border:1px solid var(--border);
+  padding:40px;
+}
+.about-callout .big {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:80px;
+  line-height:1;
+  color:var(--neon);
+  text-shadow:0 0 40px rgba(255,59,59,.3);
+  display:block;
+  margin-bottom:8px;
+}
+.about-callout p {
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.8;
+}
+.about-callout p strong { color:var(--white); }
+
+/* ─── FOOTER ─── */
+footer {
+  border-top:1px solid var(--border);
+  padding:40px 32px;
+}
+
+.footer-inner {
+  max-width:1100px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:20px;
+}
+
+.footer-logo {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:2px;
+}
+.footer-logo em { color:var(--neon); font-style:normal; }
+
+.footer-links {
+  display:flex;
+  gap:24px;
+  list-style:none;
+}
+.footer-links a {
+  font-size:11px;
+  letter-spacing:2px;
+  color:var(--dimmed);
+  text-decoration:none;
+  text-transform:uppercase;
+  transition:color .2s;
+}
+.footer-links a:hover { color:var(--muted); }
+
+.footer-copy {
+  font-size:10px;
+  color:var(--dimmed);
+  letter-spacing:1px;
+}
+
+/* ─── MOBILE ─── */
+.mobile-tabs {
+  display:none;
+  position:fixed;
+  bottom:0; left:0; right:0;
+  z-index:200;
+  background:var(--deep);
+  border-top:1px solid var(--border);
+}
+.m-tab {
+  flex:1;
+  padding:14px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  border:none;
+  background:none;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  transition:color .15s;
+}
+.m-tab.active { color:var(--neon); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.reveal {
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.reveal.in { opacity:1; transform:translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width:900px) {
+  :root { --sidebar-w:340px; }
+}
+
+@media (max-width:700px) {
+  #app {
+    flex-direction:column;
+    height:auto;
+  }
+  #sidebar {
+    width:100%;
+    height:auto;
+    max-height:calc(100vh - 56px);
+  }
+  #map-container {
+    height:50vh;
+    min-height:300px;
+  }
+  #sidebar.mobile-hidden, #map-container.mobile-hidden { display:none; }
+  .mobile-tabs { display:flex; }
+
+  .steps-grid, .stats-strip { grid-template-columns:1fr; }
+  .step { border-right:none; border-bottom:1px solid var(--border); }
+  .step:last-child { border-bottom:none; }
+  .stat { border-right:none; border-bottom:1px solid var(--border); }
+  .stat:last-child { border-bottom:none; }
+  .about-grid { grid-template-columns:1fr; gap:32px; }
+  .footer-inner { flex-direction:column; text-align:center; }
+  .footer-links { justify-content:center; }
+  nav { padding:14px 20px; }
+  .nav-links { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#" class="logo"><em>3AM</em>FOOD</a>
+  <div class="nav-right">
+    <div class="nav-clock"><span class="t" id="clock">--:--</span> LOCAL</div>
+    <ul class="nav-links">
+      <li><a href="#app" id="nav-find">Find Food</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="skyline"></div>
+
+  <p class="hero-eyebrow"><span class="pulse-dot"></span> Live · Near You · Right Now</p>
+
+  <h1 class="hero-title">
+    <span class="l1">What's</span>
+    <span class="l2">Still Open</span>
+  </h1>
+
+  <p class="hero-sub">
+    Food for <strong>shift workers, night owls</strong> &amp; the absolutely starving
+  </p>
+
+  <div class="hero-ctas">
+    <a href="#app" class="btn-primary" onclick="initApp()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Find Food Now
+    </a>
+    <a href="#how" class="btn-ghost">How It Works</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" aria-hidden="true">
+    <span class="ticker-item">Sorted by closing time <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Real hours not guesses <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Uber Eats direct links <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Shift workers welcome <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Zero tracking zero ads <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Open all night <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Find food now <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Sorted by closing time <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Real hours not guesses <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Uber Eats direct links <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Shift workers welcome <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Zero tracking zero ads <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Open all night <span class="ticker-sep">✦</span></span>
+    <span class="ticker-item">Find food now <span class="ticker-sep">✦</span></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ APP ═══════════════════════════════ -->
+<section id="app">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title-row">
+        <span class="sidebar-title">Open Now</span>
+        <span class="result-count"><span id="count">—</span> spots</span>
+      </div>
+      <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-filter="closes">Closes Soonest</button>
+        <button class="filter-btn" data-filter="distance">Nearest</button>
+        <button class="filter-btn" data-filter="rating">Top Rated</button>
+        <button class="filter-btn" data-filter="24hr">24 Hours</button>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Filter by name or cuisine…">
+      </div>
+    </div>
+
+    <div id="venue-list">
+      <div class="loc-prompt" id="loc-prompt">
+        <div class="loc-prompt-card">
+          <h3>📍 Where are you?</h3>
+          <p>We use your location just to find nearby food.<br>Nothing is stored or tracked.</p>
+          <button class="btn-primary" style="width:100%;justify-content:center;" onclick="requestLocation()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            Use My Location
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map-container">
+    <div id="map"></div>
+    <div class="map-controls">
+      <button class="map-btn" onclick="recenterMap()" title="My location">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+      </button>
+      <button class="map-btn" onclick="map && map.setZoom(map.getZoom()+1)">+</button>
+      <button class="map-btn" onclick="map && map.setZoom(map.getZoom()-1)">−</button>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile tabs -->
+<div class="mobile-tabs">
+  <button class="m-tab active" id="tab-list" onclick="showTab('list')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    List
+  </button>
+  <button class="m-tab" id="tab-map" onclick="showTab('map')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    Map
+  </button>
+</div>
+
+<!-- ═══════════════════════════════ HOW ═══════════════════════════════ -->
+<section id="how">
+  <div class="container">
+    <p class="section-kicker reveal">The deal</p>
+    <h2 class="section-h reveal">How It Works</h2>
+
+    <div class="steps-grid">
+      <div class="step reveal">
+        <span class="step-n">01</span>
+        <span class="step-icon">📍</span>
+        <div class="step-title">Share Location</div>
+        <p class="step-desc">One tap. We find what's around you right now using Google Places data. No account. No sign-up. Coordinates live in memory for a second, then they're gone.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-n">02</span>
+        <span class="step-icon">⏰</span>
+        <div class="step-title">See What's Actually Open</div>
+        <p class="step-desc">Sorted by closing time — the spots about to shut show first. No arriving to a dark window. No outdated hours. Real data from Google, updated constantly.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-n">03</span>
+        <span class="step-icon">🛵</span>
+        <div class="step-title">Order or Head Out</div>
+        <p class="step-desc">Tap Uber Eats to get it delivered, or open Maps and go yourself. We just find the food. What you do with it is between you and your stomach.</p>
+      </div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat reveal">
+        <span class="stat-n">3AM</span>
+        <span class="stat-l">Built for this exact hour</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat-n">0</span>
+        <span class="stat-l">Data stored about you</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat-n">24/7</span>
+        <span class="stat-l">Always on, never sleeps</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat-n">AU</span>
+        <span class="stat-l">Built in Canberra 🇦🇺</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ABOUT ═══════════════════════════════ -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p class="section-kicker">Why This Exists</p>
+        <h2>Built for the <em>3AM</em> hunger.</h2>
+        <p>You've finished a shift. It's late. Google Maps is a maze. Every venue says "open" but half of them aren't. You just want <strong>food, now, sorted by what's still serving</strong>.</p>
+        <p>That's all 3AMFood does. No restaurant partnerships, no paid placements, no sponsored results. Just <strong>real data, real hours, sorted for the time you're actually awake</strong>.</p>
+        <p>Built by a Canberra shift worker who got sick of arriving at closed kebab shops at 2:47am.</p>
+        <div class="about-pills">
+          <span class="pill">No tracking</span>
+          <span class="pill">No ads</span>
+          <span class="pill">No sign-up</span>
+          <span class="pill">No judgment</span>
+          <span class="pill">Free forever</span>
+        </div>
+      </div>
+      <div class="about-callout reveal">
+        <span class="big">2:47</span>
+        <p>The exact time we arrived at a <strong>closed kebab shop</strong> that Google Maps said was open. That was the day 3AMFood was born.</p>
+        <br>
+        <p style="font-size:10px;letter-spacing:2px;color:var(--dimmed);text-transform:uppercase;">A product by UPD8 Group · Canberra, AU</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><em>3AM</em>FOOD.COM</div>
+    <ul class="footer-links">
+      <li><a href="#app">Find Food</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="/privacy">Privacy</a></li>
+      <li><a href="https://upd8.group" target="_blank">UPD8 Group</a></li>
+    </ul>
+    <p class="footer-copy">© <span id="yr"></span> · No data stored · No ads · No drama</p>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════ SCRIPTS ═══════════════════════════════ -->
+<script>
+// ── GLOBALS ──────────────────────────────────────────────────────────────
+const API_KEY = 'AIzaSyByuYcj_qjTbjC2sRWx8VmlMLMxELQ3fB8';
+let map, placesService, userLat, userLng, userMarker;
+let allVenues = [], markers = [], activeInfoWindow = null;
+let currentFilter = 'closes', searchQuery = '';
+
+// ── CLOCK ─────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+// ── NAV SCROLL ─────────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('main-nav').classList.toggle('scrolled', scrollY > 60);
+});
+
+// ── REVEAL OBSERVER ────────────────────────────────────────────────────────
+const ro = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('in'), i * 80);
+      ro.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// ── MOBILE TABS ────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.getElementById('tab-list').classList.toggle('active', tab === 'list');
+  document.getElementById('tab-map').classList.toggle('active', tab === 'map');
+  document.getElementById('sidebar').classList.toggle('mobile-hidden', tab !== 'list');
+  document.getElementById('map-container').classList.toggle('mobile-hidden', tab !== 'map');
+  if (tab === 'map' && map) google.maps.event.trigger(map, 'resize');
+}
+
+// ── GOOGLE MAPS INIT ───────────────────────────────────────────────────────
+function initMap() {
+  const darkStyle = [
+    { elementType:'geometry', stylers:[{color:'#0a0a0a'}] },
+    { elementType:'labels.text.stroke', stylers:[{color:'#0a0a0a'}] },
+    { elementType:'labels.text.fill', stylers:[{color:'#3a3a3a'}] },
+    { featureType:'administrative.locality', elementType:'labels.text.fill', stylers:[{color:'#555'}] },
+    { featureType:'poi', stylers:[{visibility:'off'}] },
+    { featureType:'poi.park', elementType:'geometry', stylers:[{color:'#0e0e0e'}] },
+    { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{color:'#2a2a2a'}] },
+    { featureType:'road', elementType:'geometry', stylers:[{color:'#1a1a1a'}] },
+    { featureType:'road', elementType:'geometry.stroke', stylers:[{color:'#111'}] },
+    { featureType:'road', elementType:'labels.text.fill', stylers:[{color:'#3a3a3a'}] },
+    { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#222'}] },
+    { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{color:'#111'}] },
+    { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#555'}] },
+    { featureType:'transit', elementType:'geometry', stylers:[{color:'#111'}] },
+    { featureType:'transit.station', elementType:'labels.text.fill', stylers:[{color:'#444'}] },
+    { featureType:'water', elementType:'geometry', stylers:[{color:'#060606'}] },
+    { featureType:'water', elementType:'labels.text.fill', stylers:[{color:'#1a1a1a'}] },
+    { featureType:'water', elementType:'labels.text.stroke', stylers:[{color:'#060606'}] },
+  ];
+
+  map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 15,
+    center: { lat: -35.2809, lng: 149.1300 }, // Canberra default
+    styles: darkStyle,
+    disableDefaultUI: true,
+    gestureHandling: 'greedy',
+    backgroundColor: '#0a0a0a',
+  });
+
+  placesService = new google.maps.places.PlacesService(map);
+  requestLocation();
+}
+
+// ── LOCATION ───────────────────────────────────────────────────────────────
+function initApp() {
+  // Delay to let scroll happen, then trigger location if map already loaded
+  setTimeout(() => {
+    if (placesService) requestLocation();
+  }, 600);
+}
+
+function requestLocation() {
+  const list = document.getElementById('venue-list');
+  list.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Locating you…</p></div>`;
+
+  if (!navigator.geolocation) {
+    showError('Geolocation not supported by your browser.');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      if (map) {
+        const userPos = { lat: userLat, lng: userLng };
+        map.setCenter(userPos);
+        map.setZoom(15);
+        placeUserMarker(userPos);
+        searchNearby(userPos);
+      } else {
+        // Map not loaded yet — load it
+        loadGoogleMaps();
+      }
+    },
+    err => {
+      console.warn('Location error:', err);
+      showError('Couldn\'t get your location. Try allowing location access and refresh.');
+    },
+    { timeout: 10000, maximumAge: 60000 }
+  );
+}
+
+function loadGoogleMaps() {
+  if (document.getElementById('gmaps-script')) return;
+  const s = document.createElement('script');
+  s.id = 'gmaps-script';
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&callback=initMap`;
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
+}
+
+function placeUserMarker(pos) {
+  if (userMarker) userMarker.setMap(null);
+  userMarker = new google.maps.Marker({
+    position: pos,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 9,
+      fillColor: '#ff3b3b',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2.5,
+    },
+    title: 'You are here',
+    zIndex: 1000,
+  });
+
+  // Pulse ring
+  const pulseCircle = new google.maps.Circle({
+    map: map,
+    center: pos,
+    radius: 80,
+    strokeColor: '#ff3b3b',
+    strokeOpacity: 0.3,
+    strokeWeight: 1,
+    fillColor: '#ff3b3b',
+    fillOpacity: 0.05,
+  });
+}
+
+function recenterMap() {
+  if (map && userLat) {
+    map.setCenter({ lat: userLat, lng: userLng });
+    map.setZoom(15);
+  }
+}
+
+// ── PLACES SEARCH ──────────────────────────────────────────────────────────
+function searchNearby(pos) {
+  const list = document.getElementById('venue-list');
+  list.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>Finding food near you…</p></div>`;
+
+  const request = {
+    location: pos,
+    radius: 3000,
+    type: 'restaurant',
+    openNow: true,
+  };
+
+  placesService.nearbySearch(request, (results, status) => {
+    if (status !== google.maps.places.PlacesServiceStatus.OK || !results.length) {
+      // Try broader search
+      placesService.nearbySearch({ ...request, type: 'food' }, (r2, s2) => {
+        if (s2 === google.maps.places.PlacesServiceStatus.OK && r2.length) {
+          processResults(r2);
+        } else {
+          showError('No open venues found nearby. Try zooming out or moving the map.');
+        }
+      });
+      return;
+    }
+    processResults(results);
+  });
+}
+
+function processResults(results) {
+  allVenues = results.map(place => {
+    const dist = userLat ? getDistance(userLat, userLng, place.geometry.location.lat(), place.geometry.location.lng()) : null;
+    const closeInfo = getCloseInfo(place.opening_hours);
+    return { place, dist, closeInfo };
+  });
+
+  clearMarkers();
+  renderAll();
+  addMarkers();
+  document.getElementById('nav-find').classList.add('active');
+}
+
+// ── CLOSING TIME ───────────────────────────────────────────────────────────
+function getCloseInfo(openingHours) {
+  if (!openingHours || !openingHours.periods) {
+    return { text: 'Check hours', minsLeft: 9999, urgency: 'open', is24hr: false };
+  }
+
+  const now = new Date();
+  const day = now.getDay();
+  const hhmm = now.getHours() * 60 + now.getMinutes();
+
+  // Find today's period
+  const period = openingHours.periods.find(p => {
+    if (!p.close) return false; // 24hr
+    return p.open.day === day;
+  });
+
+  // Check for 24hr
+  const is24hr = openingHours.periods.some(p => !p.close);
+  if (is24hr) return { text: '24hrs', minsLeft: 99999, urgency: 'allday', is24hr: true };
+
+  if (!period || !period.close) {
+    // Try to find any close time today
+    const todayPeriod = openingHours.periods.find(p => p.close && p.open.day === day);
+    if (!todayPeriod) return { text: 'Open Now', minsLeft: 9999, urgency: 'open', is24hr: false };
+  }
+
+  const closePeriod = period || openingHours.periods.find(p => p.close);
+  if (!closePeriod) return { text: 'Open Now', minsLeft: 9999, urgency: 'open', is24hr: false };
+
+  const closeH = closePeriod.close.hours;
+  const closeM = closePeriod.close.minutes;
+  const closeHHMM = closeH * 60 + closeM;
+
+  let minsLeft = closeHHMM - hhmm;
+  if (minsLeft < 0) minsLeft += 24 * 60; // next day wrap
+
+  const closeStr = `${String(closeH).padStart(2,'0')}:${String(closeM).padStart(2,'0')}`;
+
+  let urgency = 'open';
+  if (minsLeft <= 30) urgency = 'urgent';
+  else if (minsLeft <= 90) urgency = 'soon';
+
+  return {
+    text: closeStr,
+    minsLeft,
+    urgency,
+    is24hr: false,
+    minutesText: minsLeft < 60
+      ? `${minsLeft}min`
+      : `${Math.floor(minsLeft/60)}h ${minsLeft%60}m`,
+  };
+}
+
+// ── DISTANCE ──────────────────────────────────────────────────────────────
+function getDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371e3;
+  const φ1 = lat1 * Math.PI/180;
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function fmtDist(m) {
+  return m < 1000 ? `${Math.round(m)}m` : `${(m/1000).toFixed(1)}km`;
+}
+
+// ── RENDER VENUES ─────────────────────────────────────────────────────────
+function getSorted(venues) {
+  const q = searchQuery.toLowerCase();
+  let filtered = q
+    ? venues.filter(v => v.place.name.toLowerCase().includes(q) || (v.place.types||[]).some(t => t.includes(q)))
+    : venues;
+
+  switch(currentFilter) {
+    case 'closes': return [...filtered].sort((a,b) => a.closeInfo.minsLeft - b.closeInfo.minsLeft);
+    case 'distance': return [...filtered].sort((a,b) => (a.dist||9999) - (b.dist||9999));
+    case 'rating': return [...filtered].sort((a,b) => (b.place.rating||0) - (a.place.rating||0));
+    case '24hr': return filtered.filter(v => v.closeInfo.is24hr);
+    default: return filtered;
+  }
+}
+
+function renderAll() {
+  const sorted = getSorted(allVenues);
+  document.getElementById('count').textContent = sorted.length;
+
+  if (!sorted.length) {
+    document.getElementById('venue-list').innerHTML = `
+      <div class="no-results">
+        <span class="no-results-icon">🍽</span>
+        <h3>Nothing Found</h3>
+        <p>No open venues match your filter right now.<br>Try a different sort or clear the search.</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('venue-list').innerHTML = sorted.map((v, i) => buildCard(v, i)).join('');
+
+  // Attach click handlers
+  sorted.forEach((v, i) => {
+    const card = document.getElementById(`card-${i}`);
+    if (card) card.addEventListener('click', () => focusVenue(v, i));
+  });
+}
+
+function urgencyTag(ci) {
+  if (ci.is24hr) return `<span class="urgency-tag tag-allday">Open 24hr</span>`;
+  if (ci.urgency === 'urgent') return `<span class="urgency-tag tag-urgent"><span class="tag-dot"></span>Closes in ${ci.minutesText}</span>`;
+  if (ci.urgency === 'soon') return `<span class="urgency-tag tag-soon"><span class="tag-dot"></span>${ci.minutesText} left</span>`;
+  return `<span class="urgency-tag tag-open"><span class="tag-dot"></span>Open Now</span>`;
+}
+
+function getTypeLabel(place) {
+  const types = (place.types || []).filter(t => !['point_of_interest','establishment','food','restaurant'].includes(t));
+  return types.slice(0,2).map(t => t.replace(/_/g,' ')).join(' · ') || 'Restaurant';
+}
+
+function buildCard(v, i) {
+  const { place, dist, closeInfo: ci } = v;
+  const uberLink = `https://www.ubereats.com/search?q=${encodeURIComponent(place.name)}`;
+  const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`;
+  const stars = place.rating ? '★'.repeat(Math.round(place.rating)) + '☆'.repeat(5-Math.round(place.rating)) : '';
+
+  return `
+  <div class="venue-card" id="card-${i}">
+    <div class="venue-card-top">
+      <div class="venue-name">${place.name}</div>
+      ${urgencyTag(ci)}
+    </div>
+    <div class="venue-type">${getTypeLabel(place)}</div>
+    <div class="venue-meta-row">
+      <div class="meta-item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <strong class="${ci.urgency}">${ci.text}</strong>
+      </div>
+      ${dist !== null ? `<div class="meta-item">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <strong>${fmtDist(dist)}</strong>
+      </div>` : ''}
+      ${place.rating ? `<div class="meta-item rating-stars">${place.rating.toFixed(1)} <span style="color:var(--amber);font-size:10px">★</span><span style="color:var(--dimmed)">(${place.user_ratings_total||0})</span></div>` : ''}
+    </div>
+    <div class="venue-actions">
+      <a href="${uberLink}" target="_blank" rel="noopener" class="btn-sm uber" onclick="event.stopPropagation()">
+        🛵 Uber Eats
+      </a>
+      <a href="${mapsLink}" target="_blank" rel="noopener" class="btn-sm" onclick="event.stopPropagation()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Maps
+      </a>
+    </div>
+  </div>`;
+}
+
+// ── MARKERS ───────────────────────────────────────────────────────────────
+function clearMarkers() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+  if (activeInfoWindow) { activeInfoWindow.close(); activeInfoWindow = null; }
+}
+
+function makeMarkerIcon(urgency, size = 12) {
+  const colors = { urgent:'#ff3b3b', soon:'#ffb830', open:'#39ff8a', allday:'#666' };
+  const color = colors[urgency] || '#39ff8a';
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: size,
+    fillColor: color,
+    fillOpacity: 0.95,
+    strokeColor: '#0a0a0a',
+    strokeWeight: 2,
+  };
+}
+
+function addMarkers() {
+  const sorted = getSorted(allVenues);
+  sorted.forEach((v, i) => {
+    const { place, closeInfo: ci } = v;
+    const marker = new google.maps.Marker({
+      position: place.geometry.location,
+      map: map,
+      icon: makeMarkerIcon(ci.urgency),
+      title: place.name,
+      zIndex: ci.urgency === 'urgent' ? 100 : ci.urgency === 'soon' ? 50 : 10,
+    });
+
+    marker.addListener('click', () => {
+      focusVenue(v, i);
+      showInfoWindow(v, i, marker);
+    });
+
+    markers.push(marker);
+  });
+}
+
+function showInfoWindow(v, i, marker) {
+  if (activeInfoWindow) activeInfoWindow.close();
+  const { place, dist, closeInfo: ci } = v;
+  const uberLink = `https://www.ubereats.com/search?q=${encodeURIComponent(place.name)}`;
+  const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`;
+
+  const iw = new google.maps.InfoWindow({
+    content: `
+      <div style="background:#141414;border:1px solid #222;min-width:230px;font-family:'DM Mono',monospace;">
+        <div style="padding:16px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:#f0ece4;margin-bottom:2px;">${place.name}</div>
+          <div style="font-size:10px;color:#5a5a5a;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">${getTypeLabel(place)}</div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a5a5a;margin-bottom:14px;">
+            <div>Closes <strong style="color:#f0ece4;font-family:'Barlow Condensed',sans-serif;font-size:16px;">${ci.text}</strong></div>
+            ${dist ? `<div>${fmtDist(dist)} away</div>` : ''}
+          </div>
+          <div style="display:flex;gap:6px;">
+            <a href="${uberLink}" target="_blank" style="flex:1;background:transparent;border:1px solid #333;color:#aaa;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px;">🛵 Uber Eats</a>
+            <a href="${mapsLink}" target="_blank" style="background:transparent;border:1px solid #333;color:#aaa;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:8px;text-decoration:none;">Maps</a>
+          </div>
+        </div>
+      </div>`,
+    disableAutoPan: false,
+  });
+
+  iw.open(map, marker);
+  activeInfoWindow = iw;
+}
+
+function focusVenue(v, i) {
+  // Highlight card
+  document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById(`card-${i}`);
+  if (card) {
+    card.classList.add('active');
+    card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  // Pan map
+  if (map && v.place.geometry) {
+    map.panTo(v.place.geometry.location);
+    map.setZoom(17);
+  }
+
+  // Show info window on marker
+  if (markers[i]) showInfoWindow(v, i, markers[i]);
+}
+
+// ── FILTERS & SEARCH ──────────────────────────────────────────────────────
+document.getElementById('filter-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  if (allVenues.length) { clearMarkers(); renderAll(); addMarkers(); }
+});
+
+document.getElementById('search-input').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  if (allVenues.length) { clearMarkers(); renderAll(); addMarkers(); }
+});
+
+// ── ERROR ─────────────────────────────────────────────────────────────────
+function showError(msg) {
+  document.getElementById('venue-list').innerHTML = `
+    <div class="loc-prompt">
+      <div class="loc-prompt-card">
+        <h3>⚠️ Oops</h3>
+        <p>${msg}</p>
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-top:8px;" onclick="requestLocation()">
+          Try Again
+        </button>
+      </div>
+    </div>`;
+}
+
+// ── LOAD MAPS ON PAGE ─────────────────────────────────────────────────────
+// Load Google Maps immediately so map is ready
+loadGoogleMaps();
+</script>
+
+<!-- Google Maps callback handled by initMap() -->
+</body>
+</html>
